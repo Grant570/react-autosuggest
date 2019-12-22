@@ -121,28 +121,6 @@ export default class Autosuggest extends Component {
     this.suggestionsContainer = this.autowhatever.itemsContainer;
   }
 
-  // eslint-disable-next-line camelcase, react/sort-comp
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (shallowEqualArrays(nextProps.suggestions, this.props.suggestions)) {
-      if (
-        nextProps.highlightFirstSuggestion &&
-        nextProps.suggestions.length > 0 &&
-        this.justPressedUpDown === false &&
-        this.justMouseEntered === false
-      ) {
-        this.highlightFirstSuggestion();
-      }
-    } else {
-      if (this.willRenderSuggestions(nextProps)) {
-        if (this.state.isCollapsed && !this.justSelectedSuggestion) {
-          this.revealSuggestions();
-        }
-      } else {
-        this.resetHighlightedSuggestion();
-      }
-    }
-  }
-
   componentDidUpdate(prevProps, prevState) {
     const {
       suggestions,
@@ -150,13 +128,34 @@ export default class Autosuggest extends Component {
       highlightFirstSuggestion
     } = this.props;
 
-    if (
-      !shallowEqualArrays(suggestions, prevProps.suggestions) &&
-      suggestions.length > 0 &&
-      highlightFirstSuggestion
-    ) {
-      this.highlightFirstSuggestion();
-      return;
+    if (this.props !== prevProps) {
+      const suggestionsAreEqual = shallowEqualArrays(
+        suggestions,
+        prevProps.suggestions
+      );
+
+      if (suggestionsAreEqual) {
+        if (
+          this.props.highlightFirstSuggestion &&
+          this.props.suggestions.length > 0 &&
+          this.justPressedUpDown === false &&
+          this.justMouseEntered === false
+        ) {
+          this.highlightFirstSuggestion();
+        }
+      } else {
+        if (suggestions.length > 0 && highlightFirstSuggestion) {
+          this.highlightFirstSuggestion();
+          return;
+        }
+        if (this.willRenderSuggestions(this.props)) {
+          if (this.state.isCollapsed && !this.justSelectedSuggestion) {
+            this.revealSuggestions();
+          }
+        } else {
+          this.resetHighlightedSuggestion();
+        }
+      }
     }
 
     if (onSuggestionHighlighted) {
